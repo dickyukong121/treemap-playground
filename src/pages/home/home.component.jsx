@@ -8,6 +8,7 @@ function HomePage() {
     return (
         <div className='home'>
             <Input/>
+            <Result/>
         </div>
     )
 }

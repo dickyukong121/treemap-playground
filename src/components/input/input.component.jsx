@@ -1,51 +1,118 @@
+import { useEffect, useState } from "react";
 import DATA from "../../example.data";
-const Input=()=>{
+import { Calculation } from '../../utils/calculation';
+import FormInput from '../form-input/form-input.component';
+import Button from '../button/button.component';
 
-    let resultArray =[]
-    const rowNumber = 5;
+import './input.styles.scss'
+import { useDispatch, useSelector } from "react-redux";
+import { fetchData, fetchDataSuccess } from "../../store/data/data.action";
+import { selectCurrentDATA } from "../../store/data/data.selector";
+const sampleFormFields = {
+    row: 3,
+    json: JSON.stringify(DATA, null, '\t'),
+}
+const Input = () => {
 
-    DATA.sort((a,b)=>{
-        return b['weight'] - a['weight'];
-    })
-    const sum = DATA.reduce((total, data) => total + data['weight'], 0);
-
-    if(rowNumber == DATA.length) {
-        for (let x =0 ; x< rowNumber ; x++)
-        resultArray.push([DATA[x]])
+    let defaultFormFields = useSelector(selectCurrentDATA)
+    if (defaultFormFields == null) {
+        defaultFormFields = sampleFormFields
     }
-    console.log(resultArray)
-    console.log(DATA);
-    console.log(sum)
 
-    const averageValueByRow = sum/rowNumber;
-    const largestValue = DATA[0]['weight'];
-    const numberOfLength = averageValueByRow>=largestValue? Math.ceil(averageValueByRow) : largestValue
+    const [formFields, setFormFields] = useState(defaultFormFields);
+    const { row, json } = formFields;
+    const dispatch = useDispatch();
 
-    console.log(numberOfLength)
-    let arraySet = [];
-    for(let x =0; x<1 ; x++) {
-        if(DATA[x]['weight'] == numberOfLength) {
-            arraySet.push(DATA[x]);
-        } else {
-            let numberNeededToAdd = numberOfLength - DATA[x]['weight'];
-            DATA.splice(x,1)
-            var remaining = remainingData(DATA, numberNeededToAdd)
-            console.log(remaining)
+    const handleReset = () => {
+        setFormFields(sampleFormFields);
+    };
+
+    const handleChange = (event) => {
+        event.preventDefault();
+        const { name, value } = event.target;
+
+        setFormFields({ ...formFields, [name]: value });
+    };
+
+    const isJsonString = (string) => {
+        try {
+            (JSON.parse(string))
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+
+        var nonInteger = false;
+
+        try {
+            for (var index = 0; index < JSON.parse(json).length; ++index) {
+
+                var weight = JSON.parse(json)[index]['weight'];
+
+                if (!Number.isInteger(weight) || weight < 1 || String(weight)[0] == '0') {
+                    nonInteger = true;
+                    break;
+                }
+            }
+
+            if (nonInteger) {
+                alert('All weight should be integer, non-zero, positive, also the first digit must not be 0')
+            }
+            else if (!Number.isInteger(Number(row))||Number(row)<1) {
+                alert('Your row must be integer and at least 1')
+            }
+            else if (!isJsonString(json)) {
+                alert('Your json is invalid')
+            }
+            else if (JSON.parse(json)?.length < row) {
+                alert('Row number must not be larger than JSON length')
+            }
+
+            else if (JSON.parse(json)?.length > 50) {
+                alert('JSON length must not be larger than 50')
+            }
+            else {
+                dispatch(fetchData(
+                    {
+                        'row': row,
+                        'json': json,
+                    }
+                ));
+
+
+            }
+        }
+        catch {
+            alert('Please check the json again')
         }
     }
-
-    function remainingData(dataSet, numberNeededToAdd){
-        console.log(dataSet)
-        console.log(numberNeededToAdd)
-        var filterData = dataSet.filter(data=>data['weight'] == numberNeededToAdd)
-        // if(filter>=)
-    }
-
     return (
         <div className='input-container'>
-            <input></input>
-            <input value={DATA}></input>
+            <form onSubmit={handleSubmit} onReset={handleReset}>
+                <h3>Row Number</h3>
+                <FormInput
+                    type='number'
+                    required
+                    onChange={handleChange}
+                    name='row'
+                    value={row}
+                />
+
+                <h3>JSON</h3>
+                <textarea rows="30" cols="50" name='json' onChange={handleChange} value={json}></textarea>
+
+
+                <div className='buttons-container'>
+                    <Button type='submit'>Submit</Button>
+                    <Button type='reset'>Reset</Button>
+                </div>
+            </form>
         </div>
+
     );
 
 }
