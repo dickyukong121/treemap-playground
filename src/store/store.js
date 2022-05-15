@@ -5,10 +5,6 @@ import {persistStore, persistReducer} from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import thunk from 'redux-thunk';
 
-//root-reducer
-
-// const middleWares = [logger];
-
 const middleWares = [thunk].filter(
     Boolean
   );
@@ -26,7 +22,6 @@ const persistConfig ={
 }
 const persistedReducer = persistReducer(persistConfig, rootReducer)
 const composedEnhancers = composeEnhancer(applyMiddleware(...middleWares));
-// export const store = configureStore(persistedReducer, undefined, composedEnhancers );
 export const store = createStore(persistedReducer, undefined, composedEnhancers );
 
 export const persistor = persistStore(store);

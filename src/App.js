@@ -1,8 +1,8 @@
-import logo from './logo.svg';
 import './App.css';
 import { Routes, Route } from 'react-router-dom';
 import HomePage from './pages/home/home.component';
 function App() {
+
   return (
     <div >
       <Routes>
@@ -14,3 +14,4 @@ function App() {
 }
 
 export default App;
+
